@@ -102,14 +102,28 @@ _MODEL_CONFIG: Dict[str, Dict[str, Any]] = {
         "rate_limit_model": "grok-3",
         "cost": {"type": "low_cost", "multiplier": 1, "description": "计1次调用"},
         "requires_super": False,
-        "display_name": "Grok Imagine 0.9",
-        "description": "Video generation model powered by Grok",
+        "display_name": "Grok Imagine 0.9 (Video)",
+        "description": "Image and video generation model. Supports text-to-image and image-to-video generation.",
         "raw_model_path": "xai/grok-imagine-0.9",
         "default_temperature": 1.0,
         "default_max_output_tokens": 8192,
         "supported_max_output_tokens": 131072,
         "default_top_p": 0.95,
         "is_video_model": True
+    },
+    "grok-imagine-image": {
+        "grok_model": ("grok-3", "MODEL_MODE_FAST"),
+        "rate_limit_model": "grok-3",
+        "cost": {"type": "low_cost", "multiplier": 1, "description": "计1次调用"},
+        "requires_super": False,
+        "display_name": "Grok Imagine Image",
+        "description": "Image generation only. Supports text-to-image and image-to-image generation (no video).",
+        "raw_model_path": "xai/grok-imagine-0.9",
+        "default_temperature": 1.0,
+        "default_max_output_tokens": 8192,
+        "supported_max_output_tokens": 131072,
+        "default_top_p": 0.95,
+        "is_video_model": False
     }
 }
 
@@ -130,6 +144,7 @@ class Models(Enum):
     GROK_4_EXPERT = "grok-4-expert"
     GROK_4_HEAVY = "grok-4-heavy"
     GROK_IMAGINE_0_9 = "grok-imagine-0.9"
+    GROK_IMAGINE_IMAGE = "grok-imagine-image"
 
     @classmethod
     def get_model_info(cls, model: str) -> Dict[str, Any]:
