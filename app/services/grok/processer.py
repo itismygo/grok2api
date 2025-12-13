@@ -239,6 +239,10 @@ class GrokResponseProcessor:
                             content = ""
 
                             for img in model_resp.get("generatedImageUrls", []):
+                                # 跳过空字符串或无效的图片路径
+                                if not img or not isinstance(img, str) or not img.strip():
+                                    logger.warning(f"[Processor] 跳过无效图片路径: {img!r}")
+                                    continue
                                 try:
                                     if image_mode == "base64":
                                         # Base64模式 - 分块发送
@@ -263,6 +267,10 @@ class GrokResponseProcessor:
                                         # URL模式
                                         await image_cache_service.download_image(f"/{img}", auth_token)
                                         img_path = img.replace('/', '-')
+                                        # 验证转换后的路径有效
+                                        if not img_path or img_path == '-':
+                                            logger.warning(f"[Processor] 跳过无效图片路径转换: {img!r}")
+                                            continue
                                         base_url = setting.global_config.get("base_url", "")
                                         img_url = f"{base_url}/images/{img_path}" if base_url else f"/images/{img_path}"
                                         content += f"![Generated Image]({img_url})\\n"
@@ -379,8 +387,12 @@ class GrokResponseProcessor:
     async def _append_images(content: str, images: list, auth_token: str) -> str:
         """追加图片到内容"""
         image_mode = setting.global_config.get("image_mode", "url")
-        
+
         for img in images:
+            # 跳过空字符串或无效的图片路径
+            if not img or not isinstance(img, str) or not img.strip():
+                logger.warning(f"[Processor] 跳过无效图片路径: {img!r}")
+                continue
             try:
                 if image_mode == "base64":
                     base64_str = await image_cache_service.download_base64(f"/{img}", auth_token)
@@ -392,6 +404,10 @@ class GrokResponseProcessor:
                     cache_path = await image_cache_service.download_image(f"/{img}", auth_token)
                     if cache_path:
                         img_path = img.replace('/', '-')
+                        # 验证转换后的路径有效
+                        if not img_path or img_path == '-':
+                            logger.warning(f"[Processor] 跳过无效图片路径转换: {img!r}")
+                            continue
                         base_url = setting.global_config.get("base_url", "")
                         img_url = f"{base_url}/images/{img_path}" if base_url else f"/images/{img_path}"
                         content += f"\\n![Generated Image]({img_url})"
@@ -400,7 +416,7 @@ class GrokResponseProcessor:
             except Exception as e:
                 logger.warning(f"[Processor] 处理图片失败: {e}")
                 content += f"\\n![Generated Image](https://assets.grok.com/{img})"
-        
+
         return content
 
     @staticmethod
